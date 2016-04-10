@@ -1,0 +1,69 @@
+<div class="container">
+	<div class="row">
+		<div class="col-md-24">
+			<div class="panel-group">
+				<div ng-show="!isAuthenticated" class="panel panel-default">
+					<div class="panel-heading">AWS security credentials</div>
+					<div class="panel-body">
+
+						<form role="form" ng-submit="submit()">
+							<div class="form-group">
+
+								<label for="email"> Email:</label> <input type="email"
+									class="form-control" id="email" ng-model="user.email">
+
+							</div>
+							<div class="form-group">
+
+								<label for="accessKeyId"> Access Key ID:</label> <input
+									type="text" class="form-control" id="accessKeyId"
+									ng-model="user.accessKeyId">
+
+							</div>
+							<div class="form-group">
+								<label for="secretAccessKey">Secret Access Key:</label> <input
+									type="password" class="form-control"
+									ng-model="user.secretAccessKey" id="secretAccessKey">
+							</div>
+							<div class="checkbox">
+								<label><input type="checkbox"> Remember me</label>
+							</div>
+							<button type="submit" class="btn btn-default">Submit</button>
+
+
+
+							<!-- 							Name: <input ng-model="user.name"> <br> <br> <br> -->
+							<!-- 							<button type="button" class="btn btn-default">Default</button> -->
+							<!-- 							<button type="button" class="btn btn-primary">Primary</button> -->
+							<!-- 							<button type="button" class="btn btn-success">Success</button> -->
+							<!-- 							<button type="button" class="btn btn-info">Info</button> -->
+							<!-- 							<button type="button" class="btn btn-warning">Warning</button> -->
+							<!-- 							<button type="button" class="btn btn-danger">Danger</button> -->
+							<!-- 							<button type="button" class="btn btn-link">Link</button> -->
+						</form>
+					</div>
+				</div>
+				<div ng-show="isAuthenticated" class="panel panel-default">
+					<div class="panel-heading">AWS Launch Pad</div>
+					<div class="panel-body">
+
+						<a ng-click="callRestricted()" href="">Shh, this is private!</a> <br>
+						<a ng-click="AMI.start()" href="">Start</a> <a
+							ng-click="AMI.stop()" href="">stop</a> <a
+							ng-click="AMI.openHTTPPort()" href="">openHTTPPort</a> <a
+							ng-click="AMI.describeInstance()" href="">describeInstance</a>
+
+						<div>{{message}}</div>
+						<a ng-click="logout()" href="">Logout</a>
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+
+
+	</div>
+</div>
+
+</div>
