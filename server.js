@@ -87,20 +87,17 @@ app.post('/authenticate', function(req, res) {
 	});
 });
 
+// TODO: Refactor using modules
+
 var instanceId = '';
 
 // TODO: test
+
+// Starts WordPress AMI. Returns instance Status
 app.get('/api/startAMI', function(req, res) {
 	console.log('starting AMI...');
-	console.log(req.user.accessKeyId);
-	console.log(req.user.secretAccessKey);
 
-	// TODO: test if security group exists and add inbound rules
-
-	// TODO: create Ami with security group
-
-
-	//initialize AWS with profile from token
+	// initialize AWS with profile from token
 	var ec2 = initE2(req);
 
 	// Create the instance
@@ -115,6 +112,9 @@ app.get('/api/startAMI', function(req, res) {
 
 		instanceId = data.Instances[0].InstanceId;
 		console.log("Created instance", instanceId);
+
+		// TODO: test if security group exists and add inbound rules
+		openHTTPPort(req, res);
 
 		// Add tags to the instance
 		params = {
@@ -146,16 +146,50 @@ app.get('/api/startAMI', function(req, res) {
 		// if (err) console.log(err, err.stack); // an error occurred
 		// else console.log("systemStatusOk", data); // successful response
 		// });
+
+		var params = {
+			// ... input parameters ...
+			InstanceIds : [ instanceId ]
+		};
+		// ec2.waitFor('instanceExists', params, function(err, data) {
+		// if (err) console.log(err, err.stack); // an error occurred
+		// else console.log(data); // successful response
+		// });
+
+		var statusData;
 		ec2.describeInstanceStatus(params, function(err, data) {
 			if (err)
 				console.log(err, err.stack); // an error occurred
-			else
+			else {
 				console.log(data); // successful response
+				statusData = data;
+			}
+
 		});
 
 		res.json({
-			instances : data.Instances
+			instanceStatus : statusData
 		});
+	});
+
+});
+
+// TODO: test
+app.get('/api/waitFor', function(req, res) {
+	// initialize AWS with profile from token
+	var ec2 = initE2(req);
+	var params = {
+	// ... input parameters ...
+	};
+
+	ec2.waitFor('instanceStatusOk', params, function(err, data) {
+		if (err)
+			console.log(err, err.stack); // an error occurred
+		else
+			console.log("instanceStatusOk", data); // successful response
+	});
+	res.json({
+		status : 'instanceStatusOk'
 	});
 
 });
@@ -167,9 +201,7 @@ app.get('/api/describeInstance', function(req, res) {
 	var params = {
 	// ... input parameters ...
 	};
-	
-	
-	
+
 	// create the AWS.Request object
 	var request = new AWS.EC2().describeInstances();
 
@@ -177,23 +209,19 @@ app.get('/api/describeInstance', function(req, res) {
 	var promise = request.promise();
 
 	// handle promise's fulfilled/rejected states
-	promise.then(
-	  function(data) {
-		  console.log('status', data); // successful response
-	  },
-	  function(err) {
-		  console.log(err, err.stack); // an error occurred
-	  }
-	);
-	
-		
-//	
-//	ec2.describeInstanceStatus(params, function(err, data) {
-//		if (err)
-//			console.log(err, err.stack); // an error occurred
-//		else
-//			console.log('status', data); // successful response
-//	});
+	promise.then(function(data) {
+		console.log('status', data); // successful response
+	}, function(err) {
+		console.log(err, err.stack); // an error occurred
+	});
+
+	//	
+	// ec2.describeInstanceStatus(params, function(err, data) {
+	// if (err)
+	// console.log(err, err.stack); // an error occurred
+	// else
+	// console.log('status', data); // successful response
+	// });
 	ec2.describeInstances(function(error, data) {
 		if (error) {
 			console.log(error); // an error occurred
@@ -203,70 +231,79 @@ app.get('/api/describeInstance', function(req, res) {
 	});
 });
 
-
-
-
-
-
-// TODO:test
-app.get('/api/openHTTPPort', function(req, res) {
-
+// Add ingress rules to a security group: opens http port to allow internet
+// traffic to reach the instance
+var openHTTPPort = function(req, res) {
+	// create Ami with security group
 	var secureGroupParams = {
-
-		GroupName : 'Bitnami',
-		// IpProtocol : 'tcp',
-		// FromPort : 80,
-		// ToPort : 80,
+		GroupName : 'Bitnami-miniCloudLaunchPad',
 		IpPermissions : [ {
 			FromPort : 80,
+			ToPort : 80,
 			IpProtocol : 'tcp',
 			IpRanges : [ {
 				CidrIp : '0.0.0.0/0'
-			},
+			}
 			/* more items */
 			],
-			ToPort : 80
+
 		},
 		/* more items */
 		],
-
 	};
 
+	// ensure there is no secureGroup with this name on this user account
 	var params = {
-		Description : 'Bitnami', /* required */
-		GroupName : 'Bitnami'
+		GroupName : secureGroupParams.GroupName,
+		Description : 'Bitnami mini cloud launch pad security group', /* required */
 	};
-	// ec2.createSecurityGroup(params, function(err, data) {
-	// if (err) console.log(err, err.stack); // an error occurred
-	// else console.log(data); // successful response
-	// });
+
 	var ec2 = initE2(req);
-	ec2.authorizeSecurityGroupIngress(secureGroupParams, function(err, data) {
-		if (err) {
-			console.log("already opened");
-			// console.log(err, err.stack);
-		} // an error occurred}
 
-		else {
-			console.log(data);
-		} // successful response}
+	// TODO: change callbacks for promises
 
-	});
-	ec2.describeSecurityGroups({}, function(err, data) {
+	// find de group if exists
+	ec2.describeSecurityGroups({
+		GroupNames : [ params.GroupName ]
+	}, function(err, data) {
 		if (err) {
-			console.log(err, err.stack);
-		}// an error occurred
-		else {
-			console.log(data); // successful response
-			console.log(data.SecurityGroups[0].IpPermissions);
+			// Security Group does'nt exist. Create
+			console.log(err, err.stack); // an error occurred
+			console.log('Security Group do not exist. Create');
+			ec2.createSecurityGroup(params, function(err, data) {
+				if (err)
+					console.log(err, err.stack); // an error occurred
+				else {
+					// open port http to outbound traffic
+					ec2.authorizeSecurityGroupIngress(secureGroupParams,
+							function(err, data) {
+								if (err) {
+									console.log("http port already opened");
+								} else {
+									// console.log(data);
+									console.log("http port opened");
+								}
+							});
+					// console.log(data); // successful response
+				}
+			});
+		} else {
+			console.log('Security Group exists');
 		}
-		;
-		res.json({
-			instances : data
-		});
 	});
 
-});
+	// ec2.describeSecurityGroups({}, function(err, data) {
+	// if (err) {
+	// console.log(err, err.stack);
+	// }// an error occurred
+	// else {
+	// // console.log(data); // successful response
+	// }
+	// ;
+
+};
+
+// });
 
 // TODO:test
 app.get('/api/stopAMI', function(req, res) {

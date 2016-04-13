@@ -24,13 +24,35 @@ padServices.factory('AWSService', function($http) {
 				// TODO: control all the instances
 				// $scope.message += data.instances[0].InstanceId;
 			}).error(function(data, status, headers, config) {
+				// error meesage
+				console.log(data);
+				return data;
+
+				// $scope.message = data.message;
+			});
+		},
+
+		waitFor : function() {
+			return $http({
+				url : '/api/waitFor',
+				method : 'GET'// ,
+			// data: {status}
+			}).success(function(data, status, headers, config) {
+				console.log(status);
+				console.log(data);
+				// console.log('AMI state: ' + State.Name);
+				// return 'AMI state: ' + State.Name;
+				return data;
+				// TODO: control all the instances
+				// $scope.message += data.instances[0].InstanceId;
+			}).error(function(data, status, headers, config) {
 				console.log(data);
 				// $scope.message = data.message;
 			});
 		},
 
 		stop : function() {
-			$http({
+			return $http({
 				url : '/api/stopAMI',
 				method : 'GET'
 			}).success(function(data, status, headers, config) {
@@ -40,29 +62,29 @@ padServices.factory('AWSService', function($http) {
 			});
 		},
 
-		openHTTPPort : function() {
-			$http({
-				url : '/api/openHTTPPort',
-				method : 'GET'
-			}).success(function(data, status, headers, config) {
-				return data;
-				// $scope.message = 'openHTTPPort!'; // Should log 'foo'
-			}).error(function(data, status, headers, config) {
-				alert(data);
-			});
-		},
-		describeInstance : function() {
-			console.log('describe instance service');
-			return $http({
-				url : '/api/describeInstance',
-				method : 'GET'
-			}).success(function(data, status, headers, config) {
-				return 'describeInstance!'; // Should log
-				// 'foo'
-			}).error(function(data, status, headers, config) {
-				alert(data);
-			});
-		}
+//		openHTTPPort : function() {
+//			return $http({
+//				url : '/api/openHTTPPort',
+//				method : 'GET'
+//			}).success(function(data, status, headers, config) {
+//				return data;
+//				// $scope.message = 'openHTTPPort!'; // Should log 'foo'
+//			}).error(function(data, status, headers, config) {
+//				alert(data);
+//			});
+//		},
+////		describeInstance : function() {
+//			console.log('describe instance service');
+//			return $http({
+//				url : '/api/describeInstance',
+//				method : 'GET'
+//			}).success(function(data, status, headers, config) {
+//				return 'describeInstance!'; // Should log
+//				// 'foo'
+//			}).error(function(data, status, headers, config) {
+//				alert(data);
+//			});
+//		}
 
 	};
 
