@@ -106,7 +106,6 @@ app.get('/api/startAMI', function(req, res) {
 			console.log("Could not create instance", err);
 			// TODO: change error code
 			res.status(err.statusCode).send(err.message);
-
 			return;
 		}
 
@@ -135,28 +134,11 @@ app.get('/api/startAMI', function(req, res) {
 
 		// Even the instance is in running state, connection with public DNS
 		// could not be reached in a few moments
-		var params = {
-		// ... input parameters ...
-		};
-		// ec2.waitFor('instanceRunning', params, function(err, data) {
-		// if (err) console.log(err, err.stack); // an error occurred
-		// else console.log("instanceRunning", data); // successful response
-		// });
-		// ec2.waitFor('systemStatusOk', params, function(err, data) {
-		// if (err) console.log(err, err.stack); // an error occurred
-		// else console.log("systemStatusOk", data); // successful response
-		// });
 
 		var params = {
 			// ... input parameters ...
 			InstanceIds : [ instanceId ]
 		};
-		// ec2.waitFor('instanceExists', params, function(err, data) {
-		// if (err) console.log(err, err.stack); // an error occurred
-		// else console.log(data); // successful response
-		// });
-
-		var statusData;
 		ec2.describeInstanceStatus(params, function(err, data) {
 			if (err)
 				console.log(err, err.stack); // an error occurred
@@ -168,7 +150,7 @@ app.get('/api/startAMI', function(req, res) {
 		});
 
 		res.json({
-			instanceStatus : statusData
+			instanceStatus : data
 		});
 	});
 
@@ -176,20 +158,26 @@ app.get('/api/startAMI', function(req, res) {
 
 // TODO: test
 app.get('/api/waitFor', function(req, res) {
+
+	console.log('param status: ', req.param('status'));
+	console.log('param instanceId: ', req.param('instanceId'));
 	// initialize AWS with profile from token
 	var ec2 = initE2(req);
 	var params = {
+		InstanceIds : [ req.param('instanceId') ]
 	// ... input parameters ...
 	};
 
-	ec2.waitFor('instanceStatusOk', params, function(err, data) {
+	ec2.waitFor(req.param('status'), params, function(err, data) {
 		if (err)
 			console.log(err, err.stack); // an error occurred
-		else
-			console.log("instanceStatusOk", data); // successful response
-	});
-	res.json({
-		status : 'instanceStatusOk'
+		else {
+			console.log(req.param('status'), data); // successful response
+			res.json({
+				status : data
+			});
+		}
+
 	});
 
 });
@@ -202,33 +190,20 @@ app.get('/api/describeInstance', function(req, res) {
 	// ... input parameters ...
 	};
 
-	// create the AWS.Request object
-	var request = new AWS.EC2().describeInstances();
-
-	// create the promise object
-	var promise = request.promise();
-
-	// handle promise's fulfilled/rejected states
-	promise.then(function(data) {
-		console.log('status', data); // successful response
-	}, function(err) {
-		console.log(err, err.stack); // an error occurred
-	});
-
-	//	
-	// ec2.describeInstanceStatus(params, function(err, data) {
-	// if (err)
-	// console.log(err, err.stack); // an error occurred
-	// else
-	// console.log('status', data); // successful response
-	// });
+	// initialize AWS with profile from token
+	var ec2 = initE2(req);
+	var returnData;
 	ec2.describeInstances(function(error, data) {
 		if (error) {
 			console.log(error); // an error occurred
 		} else {
 			console.log(data); // request succeeded
+			res.json({
+				reservations : data
+			});
 		}
 	});
+
 });
 
 // Add ingress rules to a security group: opens http port to allow internet
@@ -292,45 +267,57 @@ var openHTTPPort = function(req, res) {
 		}
 	});
 
-	// ec2.describeSecurityGroups({}, function(err, data) {
-	// if (err) {
-	// console.log(err, err.stack);
-	// }// an error occurred
-	// else {
-	// // console.log(data); // successful response
-	// }
-	// ;
-
 };
 
 // });
 
 // TODO:test
-app.get('/api/stopAMI', function(req, res) {
-	var params = {
-	// ... input parameters ...
-	};
-	console.log("instanceId: ", instanceId);
-	ec2.waitFor('instanceStopped', params, function(err, data) {
-		if (err)
-			console.log(err, err.stack); // an error occurred
-		else
-			console.log(data); // successful response
-	});
-	ec2.terminateInstances({
-		InstanceIds : [ instanceId ]
-	}, function(err, data) {
-		if (err) {
-			console.log("Could not stop instance", err);
-			return;
-		}
-	});
-	console.log('stopped AMI...');
+app
+		.get(
+				'/api/stopAMI',
+				function(req, res) {
+					var params = {
+					// ... input parameters ...
+					};
+					var ec2 = initE2(req);
+					ec2
+							.describeInstances(function(error, data) {
+								if (error) {
+									console.log(error); // an error occurred
+								} else {
 
-	res.json({
-		name : 'stopped'
-	});
-});
+									// TODO: control instance number
+									for ( var instance in data.Reservations) {
+										var instanceId = data.Reservations[instance].Instances[0].InstanceId;
+										console.log(instanceId);
+										ec2
+												.terminateInstances(
+														{
+															InstanceIds : [ instanceId ]
+														},
+														function(err, data) {
+															if (err) {
+																console
+																		.log(
+																				"Could not stop instance",
+																				err);
+																return;
+															} else {
+																console
+																		.log("terminate instance "
+																				+ instanceId);
+															}
+														});
+									}
+								}
+							});
+
+					console.log('stopped AMI...');
+
+					res.json({
+						name : 'stopped'
+					});
+				});
 
 app.get('/api/restricted', function(req, res) {
 	console.log(req);

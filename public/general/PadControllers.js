@@ -18,12 +18,9 @@ padApp
 						secretAccessKey : ''
 					};
 
-					$scope.AMI={
-						instanceId: '',
-						status :[{status}]
-					};
+					$scope.instance = {};
 
-					// todo: to service
+					// TODO: to service
 					$scope.submit = function() {
 
 						$http
@@ -78,49 +75,68 @@ padApp
 						$scope.isAuthenticated = false;
 						delete $window.sessionStorage.token;
 					};
+
+					$scope.describeInstance = function() {
+						AWSService.describeInstance();
+					};
+
+					$scope.waitFor = function() {
+						$scope.message = "pending";
+
+						// TODO: control ERR_EMPTY_RESPONSE
+						AWSService.waitFor('instanceStatusOk',
+								$scope.instance.InstanceId).then(
+								function(status) {
+									console.log(status);
+									$scope.message = 'instanceStatusOk';
+
+								});
+						AWSService
+								.waitFor('instanceRunning',
+										$scope.instance.InstanceId)
+								.then(
+
+										function(status) {
+											console.log(status);
+											$scope.publicDnsName = status.data.status.Reservations[0].Instances[0].PublicDnsName;
+											$scope.message = 'instanceRunning';
+										});
+
+					};
+
+					$scope.stop = function() {
+						AWSService.stop();
+					};
+
 					$scope.initialice = function() {
 
-						// TODO: init Bitnami secutity group if there is no
-						// group
-
-						// TODO: start image
+						// start image
 						var resultStart = AWSService.start();
-//						// TODO:open port 80
-//						var openHTTPPort = AWSService.openHTTPPort();
 
 						var promise = $q.all({
 							promiseResultStart : resultStart,
-//							promiseOpenHTTPPort : openHTTPPort,
+						// promiseOpenHTTPPort : openHTTPPort,
 						});
-
 						promise
-								.then(function(result) {
-									console.log(result.promiseResultStart.data);
-									// console.log(result.promiseResultStart.data.instances[0].State.Name);
-									
-//									console.log(result.promiseOpenHTTPPort.data);
-									// TODO: when is service.start is called,
-									// monitor the state of the
-									// AMI.
-									// Display to the user secuencially, showing
-									// a spinner meanwhile
+								.then(
+										function(result) {
+											console
+													.log(result.promiseResultStart.data);
 
-									//TODO: perform instance status checks
-									// AWSService.waitFor('instanceRunning');
+											$scope.instance = result.promiseResultStart.data.instanceStatus.Instances[0];
 
-									// get instance id to check status
-//									AWSService.waitFor().then(function(result) {
-//										console.log(result);
-//									}, function(error) {
-//										console.log(error);
-//									});
-//									
-									// pending, running
-									// initializing
-									//									
-								});
-						
-						
+											// monitors state of the instance...
+											// Display to the user sequentially,
+											// showing
+											$scope.waitFor();
+
+											// console.log(result.promiseResultStart.data.instances[0].State.Name);
+
+										}, function(error) {
+											console.log(error);
+											$scope.message = error.data;
+										});
+
 					}
 
 				});
