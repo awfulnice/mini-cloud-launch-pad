@@ -8,10 +8,18 @@ module.exports = function(grunt) {
       dev: {
         script: 'server.js'
       }
-    }
+    },
+    debug: {
+        src: ['test/**/*.js'],
+        options: {
+          output: 'docs/'
+        }
+      }
 
   });
 
+  
+  grunt.loadNpmTasks('grunt-docco');
   // load nodemon
   grunt.loadNpmTasks('grunt-nodemon');
 

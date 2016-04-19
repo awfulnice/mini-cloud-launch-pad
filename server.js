@@ -9,6 +9,8 @@ var secret = 'this is the secret secret secret 12356';
 var AWS = require('aws-sdk');
 
 // TODO: any alternative?
+
+// returns an ec2 interface with user credentials and region Ireland
 function initE2(req) {
 	AWS.config.update({
 		accessKeyId : req.user.accessKeyId,
@@ -21,6 +23,9 @@ function initE2(req) {
 }
 
 // TODO: AMI params on client
+
+// Params needed to start Bitnami WordPress 4.4.2-2 on Ubuntu 14.04.3 with a new
+// security group. This Group allows http traffic
 var startParams = {
 	ImageId : 'ami-48cc753b', // Bitnami WordPress 4.4.2-2 on Ubuntu 14.04.3
 	InstanceType : 't1.micro',
@@ -53,12 +58,17 @@ app.use(bodyParser.json());
 // set the static files location /public/img will be /img for users
 app.use('/', express.static(__dirname + '/public'));
 
+// returns an unauthoriced message if user try to access protected urls without
+// valid authentication token
 app.use(function(err, req, res, next) {
 	if (err.constructor.name === 'UnauthorizedError') {
 		res.status(401).send('Unauthorized');
 	}
 });
 
+// FrontEnd interface:
+
+//
 app.post('/authenticate', function(req, res) {
 	// TODO validate req.body.accessKeyId and req.body.secretAccessKey
 	// if is invalid, return 401
@@ -80,6 +90,9 @@ app.post('/authenticate', function(req, res) {
 	var token = jwt.sign(profile, secret, {
 		expiresInMinutes : 60 * 5
 	});
+
+	// now we could save user credentials to a database (for example: mongoDb if
+	// we are using a MEAN stack) or even a service directory
 
 	// TODO: reuse AWS token?
 	res.json({
