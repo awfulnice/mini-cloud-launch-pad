@@ -84,6 +84,10 @@ padApp
 						$scope.message = "pending";
 
 						// TODO: control ERR_EMPTY_RESPONSE
+						// TODO: check if reachability checks fails
+						// If this check fails, you may need to reboot your
+						// instance or make modifications to your operating
+						// system configuration.
 						AWSService.waitFor('instanceStatusOk',
 								$scope.instance.InstanceId).then(
 								function(status) {

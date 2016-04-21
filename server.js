@@ -10,6 +10,7 @@ var AWS = require('aws-sdk');
 
 // TODO: any alternative?
 function initE2(req) {
+	console.log(req.user.accessKeyId, req.user.secretAccessKey);
 	AWS.config.update({
 		accessKeyId : req.user.accessKeyId,
 		secretAccessKey : req.user.secretAccessKey
@@ -17,19 +18,14 @@ function initE2(req) {
 
 	// TODO: region in token
 	AWS.config.region = 'eu-west-1';
+
+	// stick with an API version
+	AWS.config.apiVersions = {
+		ec2 : '2015-10-01'
+	};
 	return new AWS.EC2();
 }
 
-// TODO: AMI params on client
-var startParams = {
-	ImageId : 'ami-48cc753b', // Bitnami WordPress 4.4.2-2 on Ubuntu 14.04.3
-	InstanceType : 't1.micro',
-	MinCount : 1,
-	MaxCount : 1,
-	SecurityGroups : [ 'Bitnami',
-	/* more items */
-	],
-};
 
 //
 // https://ec2.amazonaws.com/?Action=AuthorizeSecurityGroupIngress
@@ -100,6 +96,20 @@ app.get('/api/startAMI', function(req, res) {
 	// initialize AWS with profile from token
 	var ec2 = initE2(req);
 
+	// test if security group exists and add inbound rules
+	var GroupId = openHTTPPort(req, res, ec2);
+
+	// TODO: AMI params on client
+	var startParams = {
+		ImageId : 'ami-48cc753b', // Bitnami WordPress 4.4.2-2 on Ubuntu 14.04.3
+		InstanceType : 't1.micro',
+		MinCount : 1,
+		MaxCount : 1,
+//		SecurityGroups : [ 'Bitnami',
+		SecurityGroupIds : [ GroupId
+		/* more items */
+		],
+	};
 	// Create the instance
 	ec2.runInstances(startParams, function(err, data) {
 		if (err) {
@@ -111,9 +121,6 @@ app.get('/api/startAMI', function(req, res) {
 
 		instanceId = data.Instances[0].InstanceId;
 		console.log("Created instance", instanceId);
-
-		// TODO: test if security group exists and add inbound rules
-		openHTTPPort(req, res);
 
 		// Add tags to the instance
 		params = {
@@ -208,7 +215,7 @@ app.get('/api/describeInstance', function(req, res) {
 
 // Add ingress rules to a security group: opens http port to allow internet
 // traffic to reach the instance
-var openHTTPPort = function(req, res) {
+var openHTTPPort = function(req, res, ec2) {
 	// create Ami with security group
 	var secureGroupParams = {
 		GroupName : 'Bitnami-miniCloudLaunchPad',
@@ -233,7 +240,7 @@ var openHTTPPort = function(req, res) {
 		Description : 'Bitnami mini cloud launch pad security group', /* required */
 	};
 
-	var ec2 = initE2(req);
+	// var ec2 = initE2(req);
 
 	// TODO: change callbacks for promises
 
@@ -263,7 +270,9 @@ var openHTTPPort = function(req, res) {
 				}
 			});
 		} else {
+			console.log(data);
 			console.log('Security Group exists');
+			return data.SecurityGroups[0].GroupId;
 		}
 	});
 

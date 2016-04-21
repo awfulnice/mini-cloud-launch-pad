@@ -4,7 +4,7 @@
 
 angular.module('launchPadApp', [ 'ngRoute',
 // 'padAnimations',
-'padServices', 'padApp'
+'padServices', 'padApp','ui.bootstrap'
 // 'padFilters',
 
 ]).config([ '$routeProvider', function($routeProvider) {
