@@ -9,6 +9,8 @@ var secret = 'this is the secret secret secret 12356';
 var AWS = require('aws-sdk');
 
 // TODO: any alternative?
+
+// returns an ec2 interface with user credentials and region Ireland
 function initE2(req) {
 	console.log(req.user.accessKeyId, req.user.secretAccessKey);
 	AWS.config.update({
@@ -27,6 +29,33 @@ function initE2(req) {
 	//TODO: control connectivity errors
 	return new AWS.EC2();
 }
+<<<<<<< HEAD
+=======
+
+// TODO: AMI params on client
+
+// Params needed to start Bitnami WordPress 4.4.2-2 on Ubuntu 14.04.3 with a new
+// security group. This Group allows http traffic
+var startParams = {
+	ImageId : 'ami-48cc753b', // Bitnami WordPress 4.4.2-2 on Ubuntu 14.04.3
+	InstanceType : 't1.micro',
+	MinCount : 1,
+	MaxCount : 1,
+	SecurityGroups : [ 'Bitnami',
+	/* more items */
+	],
+};
+
+//
+// https://ec2.amazonaws.com/?Action=AuthorizeSecurityGroupIngress
+// &GroupName=websrv
+// &IpPermissions.1.IpProtocol=tcp
+// &IpPermissions.1.FromPort=80
+// &IpPermissions.1.ToPort=80
+// &IpPermissions.1.IpRanges.1.CidrIp=192.0.2.0/24
+// &IpPermissions.1.IpRanges.2.CidrIp=198.51.100.0/24
+// &AUTHPARAMS
+>>>>>>> branch 'master' of https://github.com/awfulnice/mini-cloud-launch-pad.git
 
 var app = express();
 
@@ -40,12 +69,17 @@ app.use(bodyParser.json());
 // set the static files location /public/img will be /img for users
 app.use('/', express.static(__dirname + '/public'));
 
+// returns an unauthoriced message if user try to access protected urls without
+// valid authentication token
 app.use(function(err, req, res, next) {
 	if (err.constructor.name === 'UnauthorizedError') {
 		res.status(401).send('Unauthorized');
 	}
 });
 
+// FrontEnd interface:
+
+//
 app.post('/authenticate', function(req, res) {
 	// TODO validate req.body.accessKeyId and req.body.secretAccessKey against
 	// AWS
@@ -69,9 +103,11 @@ app.post('/authenticate', function(req, res) {
 		expiresInMinutes : 60 * 5
 	});
 
-	//now he user is auhenticated. We could store user and credentials on a DB (mongoDB) or a Directory service... 
-	
-	
+
+	// Now he user is auhenticated. We could save user credentials to a database (for example: mongoDb if
+	// we are using a MEAN stack) or even a service directory
+
+
 	// TODO: reuse AWS token?
 	res.json({
 		token : token

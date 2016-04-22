@@ -1,21 +1,20 @@
 # mini-cloud-launch-pad
 Mini cloud launch pad for AWS
 
+Within a NodeJs enviroment:
 
 npm install -g grunt-cli
 
-TODO: insertar dependencia de grunt-cli para que se descargue usando npm install
-npm install
-
 npm install -g bower
 
-bower install for download dependencies
+npm install
 
+bower install for download dependencies
 
 Download the code
 Install the npm modules: npm install
 Install the bower components: bower install
-Start the server: node server.js
+Start the server: grunt
 Visit the application in your browser at http://localhost:8080
 
 
