@@ -12,7 +12,7 @@ var AWS = require('aws-sdk');
 
 // returns an ec2 interface with user credentials and region Ireland
 function initE2(req) {
-	console.log(req.user.accessKeyId, req.user.secretAccessKey);
+//	console.log(req.user.accessKeyId, req.user.secretAccessKey);
 	AWS.config.update({
 		accessKeyId : req.user.accessKeyId,
 		secretAccessKey : req.user.secretAccessKey
@@ -25,12 +25,10 @@ function initE2(req) {
 	AWS.config.apiVersions = {
 		ec2 : '2015-10-01'
 	};
-	
-	//TODO: control connectivity errors
+
+	// TODO: control connectivity errors
 	return new AWS.EC2();
 }
-<<<<<<< HEAD
-=======
 
 // TODO: AMI params on client
 
@@ -45,17 +43,6 @@ var startParams = {
 	/* more items */
 	],
 };
-
-//
-// https://ec2.amazonaws.com/?Action=AuthorizeSecurityGroupIngress
-// &GroupName=websrv
-// &IpPermissions.1.IpProtocol=tcp
-// &IpPermissions.1.FromPort=80
-// &IpPermissions.1.ToPort=80
-// &IpPermissions.1.IpRanges.1.CidrIp=192.0.2.0/24
-// &IpPermissions.1.IpRanges.2.CidrIp=198.51.100.0/24
-// &AUTHPARAMS
->>>>>>> branch 'master' of https://github.com/awfulnice/mini-cloud-launch-pad.git
 
 var app = express();
 
@@ -103,10 +90,9 @@ app.post('/authenticate', function(req, res) {
 		expiresInMinutes : 60 * 5
 	});
 
-
-	// Now he user is auhenticated. We could save user credentials to a database (for example: mongoDb if
+	// Now he user is auhenticated. We could save user credentials to a database
+	// (for example: mongoDb if
 	// we are using a MEAN stack) or even a service directory
-
 
 	// TODO: reuse AWS token?
 	res.json({

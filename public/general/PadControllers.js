@@ -80,7 +80,6 @@ padApp
 					};
 
 					$scope.waitFor = function() {
-						$scope.message.desc = "pending";
 
 						// TODO: control ERR_EMPTY_RESPONSE
 						// TODO: check if reachability checks fails
@@ -96,12 +95,11 @@ padApp
 
 											console.log(status);
 											$scope.publicDnsName = status.data.status.Reservations[0].Instances[0].PublicDnsName;
-											$scope.message.desc = 'Instance Running. Public DNS:'
-													+ $scope.publicDnsName;
+											$scope.message.desc = 'Instance Running. Public DNS:'+ $scope.publicDnsName;
 
 											// Now we are sure the instance is
 											// running...
-											AWSService
+												AWSService
 													.waitFor(
 															'instanceStatusOk',
 															$scope.instance.InstanceId)
@@ -162,7 +160,9 @@ padApp
 															}).catch(function(err){
 																$scope.message.desc = err.data;
 																$scope.message.type = 'danger';
-																//TODO: just for show the error!
+																// TODO: just
+																// for show the
+																// error!
 																$scope.instance={};
 																
 															});
