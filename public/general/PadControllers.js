@@ -10,7 +10,6 @@ padApp
 		.controller(
 				'PadCtrl',
 				function($scope, AWSService, $http, $window, $q) {
-					$scope.isAuthenticated = false;
 
 					$scope.user = {
 						email : 'awfulnice@gmail.com',
@@ -18,8 +17,9 @@ padApp
 						secretAccessKey : ''
 					};
 
-					$scope.instance = {};
+					// $scope.instance = {};
 
+				
 					// TODO: to service
 					$scope.submit = function() {
 
@@ -51,7 +51,6 @@ padApp
 
 											// Handle login errors here
 											$scope.error = 'Error: Invalid user or password';
-											$scope.welcome = '';
 										});
 
 						console.log('submit');
@@ -61,17 +60,17 @@ padApp
 						$http({
 							url : '/api/restricted',
 							method : 'GET'
-						}).success(function(data, status, headers, config) {
-							$scope.message = $scope.message + ' ' + data.name; // Should
-							// log
-							// 'foo'
-						}).error(function(data, status, headers, config) {
-							alert(data);
-						});
+						}).success(
+								function(data, status, headers, config) {
+									$scope.message.desc = $scope.message.desc
+											+ ' ' + data.name;
+								}).error(
+								function(data, status, headers, config) {
+									alert(data);
+								});
 					};
 
 					$scope.logout = function() {
-
 						$scope.isAuthenticated = false;
 						delete $window.sessionStorage.token;
 					};
@@ -81,66 +80,94 @@ padApp
 					};
 
 					$scope.waitFor = function() {
-						$scope.message = "pending";
+						$scope.message.desc = "pending";
 
 						// TODO: control ERR_EMPTY_RESPONSE
 						// TODO: check if reachability checks fails
 						// If this check fails, you may need to reboot your
 						// instance or make modifications to your operating
 						// system configuration.
-						AWSService.waitFor('instanceStatusOk',
-								$scope.instance.InstanceId).then(
-								function(status) {
-									console.log(status);
-									$scope.message = 'instanceStatusOk';
 
-								});
 						AWSService
 								.waitFor('instanceRunning',
 										$scope.instance.InstanceId)
 								.then(
-
 										function(status) {
+
 											console.log(status);
 											$scope.publicDnsName = status.data.status.Reservations[0].Instances[0].PublicDnsName;
-											$scope.message = 'instanceRunning';
+											$scope.message.desc = 'Instance Running. Public DNS:'
+													+ $scope.publicDnsName;
+
+											// Now we are sure the instance is
+											// running...
+											AWSService
+													.waitFor(
+															'instanceStatusOk',
+															$scope.instance.InstanceId)
+													.then(
+															function(status) {
+																console
+																		.log(status);
+																$scope.message.desc = 'Instance	Reachable!';
+																// change color
+																// message to
+																// green
+																$scope.message.type = 'success';
+																$scope.enableDnsLink = true;
+
+															});
+
 										});
 
 					};
 
 					$scope.stop = function() {
 						AWSService.stop();
+
 					};
-
 					$scope.initialice = function() {
-
-						// start image
-						var resultStart = AWSService.start();
-
-						var promise = $q.all({
-							promiseResultStart : resultStart,
-						// promiseOpenHTTPPort : openHTTPPort,
-						});
-						promise
+						// show first state message
+						$scope.message = {
+								desc : 'Instance pending...',
+								type : 'info'
+							};
+						// // test if security group exists and add inbound
+						// rules
+						AWSService
+								.openHTTPPort()
 								.then(
-										function(result) {
-											console
-													.log(result.promiseResultStart.data);
+										function(res) {
+											AWSService
+													.start(res.data.GroupId)
+													.then(
+															function(res) {
+																console
+																		.log(res);
+																$scope.instance = res.data.instanceStatus.Instances[0];
+																
+															
+																// monitors
+																// state of the
+																// instance...
+																// Display to
+																// the user
+																// sequentially,
+																// showing
+																$scope
+																		.waitFor();
 
-											$scope.instance = result.promiseResultStart.data.instanceStatus.Instances[0];
+																//
 
-											// monitors state of the instance...
-											// Display to the user sequentially,
-											// showing
-											$scope.waitFor();
+															}).catch(function(err){
+																$scope.message.desc = err.data;
+																$scope.message.type = 'danger';
+																//TODO: just for show the error!
+																$scope.instance={};
+																
+															});
 
-											// console.log(result.promiseResultStart.data.instances[0].State.Name);
-
-										}, function(error) {
-											console.log(error);
-											$scope.message = error.data;
 										});
-
 					}
 
 				});

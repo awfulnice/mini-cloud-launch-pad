@@ -14,9 +14,9 @@ padServices
 							// this returns something
 							console.log("test service");
 						},
-						start : function() {
+						start : function(GroupId) {
 							return $http({
-								url : '/api/startAMI',
+								url : '/api/startAMI?groupId=' + GroupId,
 								method : 'GET'
 							})
 						},
@@ -34,27 +34,35 @@ padServices
 							return $http({
 								url : '/api/stopAMI',
 								method : 'GET'
-							}).success(function(data, status, headers, config) {
-								console.log(data);
-								// $scope.message = 'AMI stopped!'; // Should
-								// log 'foo'
-							}).error(function(data, status, headers, config) {
-								alert(data);
-							});
+							})
+							// .success(function(data, status, headers, config)
+							// {
+							// console.log(data);
+							// // $scope.message = 'AMI stopped!'; // Should
+							// // log 'foo'
+							// }).error(function(data, status, headers, config)
+							// {
+							// alert(data);
+							// });
 						},
 
-						// openHTTPPort : function() {
-						// return $http({
-						// url : '/api/openHTTPPort',
-						// method : 'GET'
-						// }).success(function(data, status, headers, config) {
-						// return data;
-						// // $scope.message = 'openHTTPPort!'; // Should log
-						// 'foo'
-						// }).error(function(data, status, headers, config) {
-						// alert(data);
-						// });
-						// },
+						openHTTPPort : function() {
+							return $http({
+								url : '/api/openHTTPPort',
+								method : 'GET'
+							})
+							// .success(function(data, status, headers, config)
+							// {
+							//								
+							// return data;
+							// // $scope.message = 'openHTTPPort!'; // Should
+							// // log
+							//								
+							// }).error(function(data, status, headers, config)
+							// {
+							// console.log(data);
+							// });
+						},
 						describeInstance : function() {
 							console.log('describe instance service');
 							return $http({

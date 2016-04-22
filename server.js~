@@ -10,7 +10,6 @@ var AWS = require('aws-sdk');
 
 // TODO: any alternative?
 function initE2(req) {
-	console.log(req.user.accessKeyId, req.user.secretAccessKey);
 	AWS.config.update({
 		accessKeyId : req.user.accessKeyId,
 		secretAccessKey : req.user.secretAccessKey
@@ -18,15 +17,29 @@ function initE2(req) {
 
 	// TODO: region in token
 	AWS.config.region = 'eu-west-1';
-
-	// stick with an API version
-	AWS.config.apiVersions = {
-		ec2 : '2015-10-01'
-	};
-	
-	//TODO: control connectivity errors
 	return new AWS.EC2();
 }
+
+// TODO: AMI params on client
+var startParams = {
+	ImageId : 'ami-48cc753b', // Bitnami WordPress 4.4.2-2 on Ubuntu 14.04.3
+	InstanceType : 't1.micro',
+	MinCount : 1,
+	MaxCount : 1,
+	SecurityGroups : [ 'Bitnami',
+	/* more items */
+	],
+};
+
+//
+// https://ec2.amazonaws.com/?Action=AuthorizeSecurityGroupIngress
+// &GroupName=websrv
+// &IpPermissions.1.IpProtocol=tcp
+// &IpPermissions.1.FromPort=80
+// &IpPermissions.1.ToPort=80
+// &IpPermissions.1.IpRanges.1.CidrIp=192.0.2.0/24
+// &IpPermissions.1.IpRanges.2.CidrIp=198.51.100.0/24
+// &AUTHPARAMS
 
 var app = express();
 
@@ -47,8 +60,7 @@ app.use(function(err, req, res, next) {
 });
 
 app.post('/authenticate', function(req, res) {
-	// TODO validate req.body.accessKeyId and req.body.secretAccessKey against
-	// AWS
+	// TODO validate req.body.accessKeyId and req.body.secretAccessKey
 	// if is invalid, return 401
 	// console.log(req);
 	if (req.body.accessKeyId === '' || req.body.secretAccessKey === '') {
@@ -69,9 +81,6 @@ app.post('/authenticate', function(req, res) {
 		expiresInMinutes : 60 * 5
 	});
 
-	//now he user is auhenticated. We could store user and credentials on a DB (mongoDB) or a Directory service... 
-	
-	
 	// TODO: reuse AWS token?
 	res.json({
 		token : token
@@ -91,26 +100,8 @@ app.get('/api/startAMI', function(req, res) {
 	// initialize AWS with profile from token
 	var ec2 = initE2(req);
 
-	var GroupId = req.param('groupId');
-
-	console.log(GroupId);
-	// TODO: AMI params on client
-	var startParams = {
-		ImageId : 'ami-48cc753b', // Bitnami WordPress 4.4.2-2 on Ubuntu
-		// 14.04.3
-		InstanceType : 't1.micro',
-		MinCount : 1,
-		MaxCount : 1,
-		// SecurityGroups : [ 'Bitnami',
-		SecurityGroupIds : [ GroupId
-		/* more items */
-		],
-	};
-	console.log(startParams);
-
 	// Create the instance
 	ec2.runInstances(startParams, function(err, data) {
-		console.log("running instance...", instanceId);
 		if (err) {
 			console.log("Could not create instance", err);
 			// TODO: change error code
@@ -119,7 +110,10 @@ app.get('/api/startAMI', function(req, res) {
 		}
 
 		instanceId = data.Instances[0].InstanceId;
-		console.log("Instance created!", instanceId);
+		console.log("Created instance", instanceId);
+
+		// TODO: test if security group exists and add inbound rules
+		openHTTPPort(req, res);
 
 		// Add tags to the instance
 		params = {
@@ -214,8 +208,7 @@ app.get('/api/describeInstance', function(req, res) {
 
 // Add ingress rules to a security group: opens http port to allow internet
 // traffic to reach the instance
-app.get('/api/openHTTPPort', function(req, res) {
-
+var openHTTPPort = function(req, res) {
 	// create Ami with security group
 	var secureGroupParams = {
 		GroupName : 'Bitnami-miniCloudLaunchPad',
@@ -244,7 +237,7 @@ app.get('/api/openHTTPPort', function(req, res) {
 
 	// TODO: change callbacks for promises
 
-	// find the group if exists
+	// find de group if exists
 	ec2.describeSecurityGroups({
 		GroupNames : [ params.GroupName ]
 	}, function(err, data) {
@@ -266,20 +259,17 @@ app.get('/api/openHTTPPort', function(req, res) {
 									console.log("http port opened");
 								}
 							});
-					console.log(data); // successful response
+					// console.log(data); // successful response
 				}
 			});
 		} else {
-			console.log(data);
 			console.log('Security Group exists');
-			res.json({
-				GroupId : data.SecurityGroups[0].GroupId
-			});
-
 		}
 	});
 
-});
+};
+
+// });
 
 // TODO:test
 app

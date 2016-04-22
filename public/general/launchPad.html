@@ -5,6 +5,9 @@
 				<div ng-show="!isAuthenticated" class="panel panel-default">
 					<div class="panel-heading">AWS security credentials</div>
 					<div class="panel-body">
+						<div ng-if="error">
+							<uib-alert type="danger">{{error}} </uib-alert>
+						</div>
 
 						<form role="form" ng-submit="submit()">
 							<div class="form-group">
@@ -37,17 +40,28 @@
 					<div class="panel-heading">AWS Launch Pad</div>
 					<div class="panel-body">
 
-						<a ng-click="callRestricted()" href="">Shh, this is private!</a> <br>
-						<a ng-click="stop()" href="">stop</a>
-						<h2>
-							<a ng-click="waitFor()" href="">waitFor</a>
-						</h2>
-						<uib-alert type="success">{{message}}</uib-alert>
-						<a ng-click="logout()" href="">Logout</a> <a
-							ng-disabled="{{message !='instanceStatusOk'}}"
-							ng-href="http://{{publicDnsName}}">{{publicDnsName}}</a>
-						</h2>
-						<div></div>
+						<!-- 						<a ng-click="callRestricted()" href="">Shh, this is private!</a> <br> -->
+
+						<uib-alert ng-if="instance" type="{{message.type}}">{{message.desc}}
+						<div ng-if="enableDnsLink">
+							<a ng-href="http://{{publicDnsName}}">Access Bitnami
+								WordPress</a>
+						</div>
+						</uib-alert>
+
+
+						<!-- 							ng-disabled="!enableDnsLink"  -->
+
+
+						<!-- 						<button type="text" class="btn" ng-if="publicDnsName" -->
+						<!-- 							ng-class="{'btn-info': !enableDnsLink, 'btn-success': enableDnsLink}" -->
+						<!-- 							ng-click="go(publicDnsName)">{{publicDnsName}}</button> -->
+						<button type="text" class="btn btn-primary" ng-if="instance"
+							ng-disabled="!enableDnsLink" ng-click="stop()">Stop
+							Instance</button>
+						<button type="text" class="btn" ng-click="logout()">Logout</button>
+
+
 					</div>
 				</div>
 
