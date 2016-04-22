@@ -1,7 +1,6 @@
 {
-<<<<<<< HEAD
   "name": "mini-cloud-launch-pad",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "dependencies": {
     "bootstrap": "latest",
     "font-awesome": "latest",
@@ -14,17 +13,3 @@
     "angular-bootstrap": "^1.3.2"
   }
 }
-=======
-    "name": "mini-cloud-launch-pad",
-    "version": "1.0.0",
-    "dependencies": {
-    
-        "bootstrap": "latest",
-        "font-awesome": "latest",
-        "animate.css": "latest",
-        "angular": "latest",
-        "angular-route": "latest"   ,
-        "angular-bootstrap": "latest"
-    }
-}
->>>>>>> branch 'master' of https://github.com/awfulnice/mini-cloud-launch-pad.git
