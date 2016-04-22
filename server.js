@@ -187,8 +187,8 @@ app.get('/api/startAMI', function(req, res) {
 // TODO: test
 app.get('/api/waitFor', function(req, res) {
 
-	console.log('param status: ', req.param('status'));
-	console.log('param instanceId: ', req.param('instanceId'));
+	//console.log('param status: ', req.param('status'));
+	//console.log('param instanceId: ', req.param('instanceId'));
 	// initialize AWS with profile from token
 	var ec2 = initE2(req);
 	var params = {
