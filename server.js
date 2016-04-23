@@ -8,42 +8,6 @@ var secret = 'this is the secret secret secret 12356';
 
 var AWS = require('aws-sdk');
 
-// TODO: any alternative?
-
-// returns an ec2 interface with user credentials and region Ireland
-function initE2(req) {
-//	console.log(req.user.accessKeyId, req.user.secretAccessKey);
-	AWS.config.update({
-		accessKeyId : req.user.accessKeyId,
-		secretAccessKey : req.user.secretAccessKey
-	});
-
-	// TODO: region in token
-	AWS.config.region = 'eu-west-1';
-
-	// stick with an API version
-	AWS.config.apiVersions = {
-		ec2 : '2015-10-01'
-	};
-
-	// TODO: control connectivity errors
-	return new AWS.EC2();
-}
-
-// TODO: AMI params on client
-
-// Params needed to start Bitnami WordPress 4.4.2-2 on Ubuntu 14.04.3 with a new
-// security group. This Group allows http traffic
-var startParams = {
-	ImageId : 'ami-48cc753b', // Bitnami WordPress 4.4.2-2 on Ubuntu 14.04.3
-	InstanceType : 't1.micro',
-	MinCount : 1,
-	MaxCount : 1,
-	SecurityGroups : [ 'Bitnami',
-	/* more items */
-	],
-};
-
 var app = express();
 
 // We are going to protect /api routes with JWT
@@ -101,6 +65,40 @@ app.post('/authenticate', function(req, res) {
 });
 
 // TODO: Refactor using modules
+
+// returns an ec2 interface with user credentials and region Ireland
+function initE2(req) {
+	// console.log(req.user.accessKeyId, req.user.secretAccessKey);
+	AWS.config.update({
+		accessKeyId : req.user.accessKeyId,
+		secretAccessKey : req.user.secretAccessKey
+	});
+
+	// TODO: region in token
+	AWS.config.region = 'eu-west-1';
+
+	// stick with an API version
+	AWS.config.apiVersions = {
+		ec2 : '2015-10-01'
+	};
+
+	// TODO: control connectivity errors
+	return new AWS.EC2();
+}
+
+// TODO: AMI params on client
+
+// Params needed to start Bitnami WordPress 4.4.2-2 on Ubuntu 14.04.3 with a new
+// security group. This Group allows http traffic
+var startParams = {
+	ImageId : 'ami-48cc753b', // Bitnami WordPress 4.4.2-2 on Ubuntu 14.04.3
+	InstanceType : 't1.micro',
+	MinCount : 1,
+	MaxCount : 1,
+	SecurityGroups : [ 'Bitnami',
+	/* more items */
+	],
+};
 
 var instanceId = '';
 
@@ -187,8 +185,8 @@ app.get('/api/startAMI', function(req, res) {
 // TODO: test
 app.get('/api/waitFor', function(req, res) {
 
-	//console.log('param status: ', req.param('status'));
-	//console.log('param instanceId: ', req.param('instanceId'));
+	// console.log('param status: ', req.param('status'));
+	// console.log('param instanceId: ', req.param('instanceId'));
 	// initialize AWS with profile from token
 	var ec2 = initE2(req);
 	var params = {

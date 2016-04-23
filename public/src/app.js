@@ -1,15 +1,15 @@
-'use strict';
 
 /* App Module */
 
 angular.module('launchPadApp', [ 'ngRoute',
 // 'padAnimations',
-'padServices', 'padApp','ui.bootstrap'
+'padServices', 'padApp', 'ui.bootstrap'
 // 'padFilters',
 
 ]).config([ '$routeProvider', function($routeProvider) {
+	'use strict';
 	$routeProvider.when('/launchPad', {
-		templateUrl : 'general/launchPad.html',
+		templateUrl : '/src/general/launchPad.html',
 		controller : 'PadCtrl'
 	}).otherwise({
 		redirectTo : '/launchPad'
