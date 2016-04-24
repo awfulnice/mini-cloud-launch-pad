@@ -105,7 +105,7 @@ padApp
 										.then(
 												function(status) {
 
-													console.log(status);
+													//console.log(status);
 													$scope.publicDnsName = status.data.status.Reservations[0].Instances[0].PublicDnsName;
 													$scope.message.desc = 'Instance Running. Public DNS:'
 															+ $scope.publicDnsName;
@@ -121,7 +121,7 @@ padApp
 												})
 										.then(
 												function(status) {
-													console.log(status);
+													//console.log(status);
 													$scope.message.desc = 'Instance	Reachable!';
 													// change color message to
 													// green
@@ -148,18 +148,16 @@ padApp
 								};
 								// test if security group exists and add inbound
 								// rules
-								AWSService
-										.openHTTPPort()
-										.then(
-												function(res) {
-													AWSService
+								AWSService.openHTTPPort()
+								.then(	function(res) {
+										AWSService
 															.start(
 																	res.data.GroupId)
 															.then(
 																	function(
 																			res) {
-																		console
-																				.log(res);
+																		//console.log(res);
+
 																		$scope.instance = res.data.instanceStatus.Instances[0];
 
 																		// monitors
@@ -195,7 +193,11 @@ padApp
 																		// error!
 																		// $scope.instance={};
 																		//																
-																	});
+																	})
+																	.catch(function(){
+																		//TODO:
+																	})
+																	;
 												});
 							};
 						} ]);

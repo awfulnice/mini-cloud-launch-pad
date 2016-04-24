@@ -3,6 +3,26 @@ module.exports = function(grunt) {
 
 	grunt
 			.initConfig({
+				pkg : grunt.file.readJSON('package.json'),
+				karma : {
+					unit : {
+						options : {
+							frameworks : [ 'jasmine' ],
+							singleRun : true,
+							browsers : [ 'PhantomJS' ],
+							files : [
+									'public/libs/angular/angular.js',
+									'public/libs/angular-mocks/angular-mocks.js',
+									'public/libs/angular-bootstrap/ui-bootstrap.js',
+									'public/libs/angular-route/angular-route.min.js',
+
+									'public/src/app.js',
+									'public/src/general/*.js',
+
+									'test/**/*.js' ]
+						}
+					}
+				},
 
 				// JS TASKS
 				// ================================================================
@@ -68,38 +88,6 @@ module.exports = function(grunt) {
 					tasks : [ 'nodemon', 'watch' ]
 				},
 
-				karma : {
-					unit : {
-						options : {
-							frameworks : [ 'jasmine' ],
-							singleRun : true,
-							browsers : [ 'PhantomJS' ],
-							files : [
-									'public/src/**/*.js',
-									'public/libs/**/*.js',
-									'public/libs/**/*/*.js',
-									'public/libs/**/*/*/*.js',
-//									'src/main/webapp/scripts/bower/angular/angular.js',
-//									'src/main/webapp/scripts/bower/angular-mocks/angular-mocks.js',
-//									'src/main/webapp/scripts/bower/ng-table/dist/ng-table.js',
-//									'src/main/webapp/scripts/bower/angular-upload/angular-upload.min.js',
-//									'src/main/webapp/scripts/bower/angular-route/angular-route.min.js',
-//									'src/main/webapp/scripts/bower/bower-angular-route/angular-route.js',
-//									'src/main/webapp/scripts/bower/angular-translate/angular-translate.js',
-//									'src/main/webapp/scripts/bower/angular-dynamic-locale/src/tmhDynamicLocale.js',
-//									'src/main/webapp/scripts/constant.js',
-//									'src/main/webapp/scripts/menu.js',
-//									'src/main/webapp/scripts/bower/angularjs-slider/rzslider.js',
-//									'src/main/webapp/scripts/bower/angular-datepicker/app/scripts/datePicker.js',
-//									'src/main/webapp/scripts/bower/ui-bootstrap-tpls/ui-bootstrap-tpls-0.13.0.js',
-//									'src/main/webapp/scripts/bower/Smart-Table/dist/smart-table.js',
-//									'src/main/webapp/scripts/liquidations/app.js',
-//									'src/main/webapp/scripts/liquidations/**/*.js',
-									'test/**/*.js' ]
-						}
-					}
-				},
-
 				debug : {
 					src : [ 'test/**/*.js' ],
 					options : {
@@ -119,6 +107,7 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-watch');
 	grunt.loadNpmTasks('grunt-nodemon');
 	grunt.loadNpmTasks('grunt-concurrent');
+	grunt.loadNpmTasks('grunt-karma');
 
 	// grunt.registerTask('default', ['less', 'cssmin', 'jshint', 'uglify',
 	// 'concurrent']);
@@ -128,7 +117,8 @@ module.exports = function(grunt) {
 
 	// Other tasks
 	grunt.registerTask('ugly', [ 'less', 'cssmin', 'uglify', ]);
-	grunt.registerTask('test', [ 'jshint', 'karma' ]);
+	// grunt.registerTask('test', [ 'jshint', 'karma' ]);
+	grunt.registerTask('test', [ 'karma' ]);
 
 	grunt.registerTask('doc', [ 'docco' ]);
 
