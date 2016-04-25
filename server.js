@@ -119,8 +119,8 @@ app.get('/api/startAMI', function(req, res) {
 		ImageId : 'ami-48cc753b', // Bitnami WordPress 4.4.2-2 on Ubuntu
 		// 14.04.3
 		InstanceType : 't1.micro',
-		MinCount : 1,
-		MaxCount : 1,
+		MinCount : 1,//20
+		MaxCount : 1,//20
 		// SecurityGroups : [ 'Bitnami',
 		SecurityGroupIds : [ GroupId
 		/* more items */
@@ -138,6 +138,7 @@ app.get('/api/startAMI', function(req, res) {
 			return;
 		}
 
+		//TODO: may have been launched more than one instance...
 		instanceId = data.Instances[0].InstanceId;
 		console.log("Instance created!", instanceId);
 

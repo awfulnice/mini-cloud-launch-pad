@@ -89,10 +89,13 @@ padApp
 								AWSService.describeInstance();
 							};
 
+							// Monitors state of the instance...
+							// Display state sequentially to the user. First
+							// instance is running, then test reachability
 							$scope.waitFor = function() {
 
-								// TODO: control ERR_EMPTY_RESPONSE
-								// TODO: check if reachability checks fails
+								// TODO: check if reachability checks fails.
+								// Deal with ERR_EMPTY_RESPONSE
 								// If this check fails, you may need to reboot
 								// your
 								// instance or make modifications to your
@@ -105,7 +108,7 @@ padApp
 										.then(
 												function(status) {
 
-													//console.log(status);
+													// console.log(status);
 													$scope.publicDnsName = status.data.status.Reservations[0].Instances[0].PublicDnsName;
 													$scope.message.desc = 'Instance Running. Public DNS:'
 															+ $scope.publicDnsName;
@@ -121,25 +124,29 @@ padApp
 												})
 										.then(
 												function(status) {
-													//console.log(status);
+													// Now we can access the
+													// instance.
+													$scope.enableDnsLink = true;
 													$scope.message.desc = 'Instance	Reachable!';
 													// change color message to
 													// green
 													$scope.message.type = 'success';
-													$scope.enableDnsLink = true;
-
-												}, function(err) {
+												},
+												function(err) {
 													console.log(err);
-												}, function(progress) {
-													console.log(progress);
+													// Unexpected error: i.e:
+													// ERR_EMPTY_RESPONSE
+													$scope.message.desc = 'Unexpected error!';
+													$scope.message.type = 'danger';
 												});
-
 							};
 
+							// stop a instances
 							$scope.stop = function() {
 								AWSService.stop();
 							};
 
+							// Start new Bitnami Wordpress instance.
 							$scope.startAMI = function() {
 								// // show first state message
 								$scope.message = {
@@ -148,28 +155,23 @@ padApp
 								};
 								// test if security group exists and add inbound
 								// rules
-								AWSService.openHTTPPort()
-								.then(	function(res) {
-										AWSService
+								AWSService
+										.openHTTPPort()
+										.then(
+												function(res) {
+													AWSService
 															.start(
 																	res.data.GroupId)
 															.then(
 																	function(
 																			res) {
-																		//console.log(res);
+																		// console.log(res);
 
 																		$scope.instance = res.data.instanceStatus.Instances[0];
 
-																		// monitors
+																		// answer
+																		// about
 																		// state
-																		// of
-																		// the
-																		// instance...
-																		// Display
-																		// to
-																		// the
-																		// user
-																		// sequentially
 																		$scope
 																				.waitFor();
 
@@ -193,11 +195,14 @@ padApp
 																		// error!
 																		// $scope.instance={};
 																		//																
+																	},
+																	// TODO: Test
+																	function(
+																			err) {
+																		$scope.message.desc = err.data;
+																		$scope.message.type = 'danger';
 																	})
-																	.catch(function(){
-																		//TODO:
-																	})
-																	;
+
 												});
 							};
 						} ]);
