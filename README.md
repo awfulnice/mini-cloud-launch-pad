@@ -1,23 +1,41 @@
 # mini-cloud-launch-pad
 Mini cloud launch pad for AWS
 
-Within a NodeJs enviroment:
+This is just a proof of concept web appplication that allow an IAM user to launch a Bitnami WordPress AMI within his AWS account.
+This user must have permision to instantiate this kind of AMI and to create security groups. 
 
+## Getting started
+Within a NodeJs enviroment install Grunt's command line interface (CLI) globally.:
+```node
 npm install -g grunt-cli
-
-npm install -g bower
-
+```
+Then install locally all the node dependences:
+```node
 npm install
-
-bower install for download dependencies
-
-Download the code
-Install the npm modules: npm install
-Install the bower components: bower install
-Start the server: grunt
+```
+Install bower dependences
+```node
+bower install
+```
+Start the server:
+```node
+ grunt
+```
 Visit the application in your browser at http://localhost:8080
 
+### Other tasks
+For launch jasmine test and jhint tasks
+```node
+ grunt test
+```
+For launch uglify and css compilation tasks
+```node
+ grunt ugly
+``` 
 
-https://scotch.io/tutorials/setting-up-a-mean-stack-single-page-application
-https://scotch.io/tutorials/using-gruntjs-in-a-mean-stack-application
+##Documentation
+
+Once started, the user is invited to complete AWS credentials and press submit.
+After the user presses submit, the backend code launch a Bitnami WordPress AMI displaying the different states through which it passes the instance. Once the instance is reachable, it shows a link to access the WordPress application and a button to stop the AMI. Also a logout button is displayed and become enabled when the reach checks ar completed. 
+
 
