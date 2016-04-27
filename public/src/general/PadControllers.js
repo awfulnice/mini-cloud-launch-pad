@@ -18,11 +18,12 @@ padApp
 
 							$scope.user = {
 								email : 'awfulnice@gmail.com',
+								password : '',
+								repassword : '',
 								accessKeyId : '',
-								secretAccessKey : ''
+								secretAccessKey : '',
+								remember : false
 							};
-
-							// $scope.instance = {};
 
 							// TODO: to service
 							$scope.submit = function() {
@@ -42,17 +43,20 @@ padApp
 													console.log(profile);
 													console.log(data.token);
 													// TODO: authenticate users
+													// and save user info and
+													// credentials if remember
+													// me is checked
 													$scope.isAuthenticated = true;
 
+													// invoque service directly
 													$scope.startAMI();
-
 												})
 										.error(
 												function(data, status, headers,
 														config) {
 													// Erase the token if the
-													// user fails
-													// to log in
+													// user fails to log in
+
 													delete $window.sessionStorage.token;
 													$scope.isAuthenticated = false;
 
@@ -63,6 +67,7 @@ padApp
 								console.log('submit');
 							};
 
+							// Just a test method
 							$scope.callRestricted = function() {
 								$http({
 									url : '/api/restricted',
@@ -71,8 +76,7 @@ padApp
 										.success(
 												function(data, status, headers,
 														config) {
-													$scope.message.desc = $scope.message.desc
-															+ ' ' + data.name;
+													$scope.message.desc = $scope.message.desc + ' ' + data.name;
 												}).error(
 												function(data, status, headers,
 														config) {
@@ -81,12 +85,9 @@ padApp
 							};
 
 							$scope.logout = function() {
+								// we show login form and delete auth token
 								$scope.isAuthenticated = false;
 								delete $window.sessionStorage.token;
-							};
-
-							$scope.describeInstance = function() {
-								AWSService.describeInstance();
 							};
 
 							// Monitors state of the instance...
@@ -95,60 +96,57 @@ padApp
 							$scope.waitFor = function() {
 
 								// TODO: check if reachability checks fails.
-								// Deal with ERR_EMPTY_RESPONSE
-								// If this check fails, you may need to reboot
-								// your
-								// instance or make modifications to your
-								// operating
-								// system configuration.
-
+								// Deal with
+								// ERR_EMPTY_RESPONSE. If this check fails, you
+								// may need to
+								// reboot
+								// your instance or make modifications to your
+								// operating system
+								// configuration.
+								//			
 								AWSService
 										.waitFor('instanceRunning',
 												$scope.instance.InstanceId)
 										.then(
 												function(status) {
-
-													// console.log(status);
+													// we suppose we are
+													// launching one instance...
 													$scope.publicDnsName = status.data.status.Reservations[0].Instances[0].PublicDnsName;
-													$scope.message.desc = 'Instance Running. Public DNS:'
-															+ $scope.publicDnsName;
+													$scope.message.desc = 'Instance Running. Waiting to	complete reachability checks. Public DNS:'	+ $scope.publicDnsName;
 
 													// Now we are sure the
-													// instance is
-													// running...
+													// instance is running...
 
+													
 													return AWSService
 															.waitFor(
 																	'instanceStatusOk',
 																	$scope.instance.InstanceId);
-												})
+													})
 										.then(
 												function(status) {
 													// Now we can access the
 													// instance.
 													$scope.enableDnsLink = true;
-													$scope.message.desc = 'Instance	Reachable!';
-													// change color message to
-													// green
+													$scope.message.desc = 'Instance Reachable!';
 													$scope.message.type = 'success';
-												},
-												function(err) {
-													console.log(err);
-													// Unexpected error: i.e:
-													// ERR_EMPTY_RESPONSE
-													$scope.message.desc = 'Unexpected error!';
-													$scope.message.type = 'danger';
+													// we control errors in both
+													// calls to waitFor...
+												}).catch(function(err){
+													 console.log(err);
+													 $scope.message.desc = 'Unexpected error!' + err.data ?	 err.data : '';
+													 $scope.message.type = 'danger';
 												});
 							};
-
-							// stop a instances
+							//
+							// stop all instances
 							$scope.stop = function() {
 								AWSService.stop();
 							};
-
+							//
 							// Start new Bitnami Wordpress instance.
 							$scope.startAMI = function() {
-								// // show first state message
+								// show first state message
 								$scope.message = {
 									desc : 'Instance pending...',
 									type : 'info'
@@ -159,50 +157,24 @@ padApp
 										.openHTTPPort()
 										.then(
 												function(res) {
-													AWSService
-															.start(
-																	res.data.GroupId)
-															.then(
-																	function(
-																			res) {
-																		// console.log(res);
+													return AWSService
+															.start(res.data.GroupId);
+												})
+										.then(
+												function(res) {
 
-																		$scope.instance = res.data.instanceStatus.Instances[0];
-
-																		// answer
-																		// about
-																		// state
-																		$scope
-																				.waitFor();
-
-																		// //
-																		//
-																		// }).catch(function(err){
-																		// $scope.message.desc
-																		// =
-																		// err.data;
-																		// $scope.message.type
-																		// =
-																		// 'danger';
-																		// //
-																		// TODO:
-																		// just
-																		// //
-																		// for
-																		// show
-																		// the
-																		// //
-																		// error!
-																		// $scope.instance={};
-																		//																
-																	},
-																	// TODO: Test
-																	function(
-																			err) {
-																		$scope.message.desc = err.data;
-																		$scope.message.type = 'danger';
-																	})
-
+													$scope.instance = res.data.instanceStatus.Instances[0];
+													//			
+													// // answer about state
+													$scope.waitFor();
+											}).catch(function(err){
+													console.log(err);
+													 $scope.message.desc = err.data;
+													 $scope.message.type = 'danger';
+													 // TODO:
+													 // just for show the
+														// error!
+													 $scope.instance ={};													
 												});
 							};
 						} ]);
@@ -236,8 +208,7 @@ padApp.factory('authInterceptor', [
 				request : function(config) {
 					config.headers = config.headers || {};
 					if ($window.sessionStorage.token) {
-						config.headers.Authorization = 'Bearer '
-								+ $window.sessionStorage.token;
+						config.headers.Authorization = 'Bearer ' + $window.sessionStorage.token;
 					}
 					return config;
 				},

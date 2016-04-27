@@ -16,6 +16,8 @@
     "body-parser": "~1.4.2",
     "express": "~4.9.0",
     "express-jwt": "~0.2.1",
+    "grunt": "^0.4.5",
+    "grunt-cli": "^1.2.0",
     "jsonwebtoken": "~0.4.0",
     "method-override": "~2.0.2"
   },

@@ -10,13 +10,25 @@
 							<uib-alert type="danger">{{error}} </uib-alert>
 						</div>
 
+						The credentials must belong to an IAM user with enough privileges
+						to start a Bitnami Worpress and create security Groups through API
+						calls. (Tested with AdministratorAccess)
+
+
 						<form role="form" ng-submit="submit()">
-							<div class="form-group">
+							<!-- 							<div class="form-group"> -->
+							<!-- 								<label for="email"> Email:</label> <input type="email" -->
+							<!-- 									class="form-control" id="email" ng-model="user.email"> -->
 
-								<label for="email"> Email:</label> <input type="email"
-									class="form-control" id="email" ng-model="user.email">
-
-							</div>
+							<!-- 							</div> -->
+							<!-- 							<div class="form-group"> -->
+							<!-- 								<label for="password"> Password:</label> <input type="password" -->
+							<!-- 									class="form-control" id="password" ng-model="user.password"> -->
+							<!-- 							</div> -->
+							<!-- 							<div class="form-group"> -->
+							<!-- 								<label for="repassword"> Repeat password:</label> <input type="password" -->
+							<!-- 									class="form-control" id="repassword" ng-model="user.repassword"> -->
+							<!-- 							</div> -->
 							<div class="form-group">
 
 								<label for="accessKeyId"> Access Key ID:</label> <input
@@ -30,7 +42,8 @@
 									ng-model="user.secretAccessKey" id="secretAccessKey">
 							</div>
 							<div class="checkbox">
-								<label><input type="checkbox"> Remember me</label>
+								<label><input type="checkbox" id="remember"
+									ng-model="user.remember"> Remember me</label>
 							</div>
 							<button type="submit" class="btn btn-default">Submit</button>
 
@@ -41,22 +54,14 @@
 					<div class="panel-heading">AWS Launch Pad</div>
 					<div class="panel-body">
 
-						<!-- 						<a ng-click="callRestricted()" href="">Shh, this is private!</a> <br> -->
-
 						<uib-alert ng-if="instance" type="{{message.type}}">{{message.desc}}
 						<div ng-if="enableDnsLink">
-							<a ng-href="http://{{publicDnsName}}">Access Bitnami
-								WordPress</a>
+							<a ng-href="http://{{publicDnsName}}" target="_blank">Access
+								Bitnami WordPress</a>
 						</div>
 						</uib-alert>
 
 
-						<!-- 							ng-disabled="!enableDnsLink"  -->
-
-
-						<!-- 						<button type="text" class="btn" ng-if="publicDnsName" -->
-						<!-- 							ng-class="{'btn-info': !enableDnsLink, 'btn-success': enableDnsLink}" -->
-						<!-- 							ng-click="go(publicDnsName)">{{publicDnsName}}</button> -->
 						<button type="text" class="btn btn-primary" ng-if="instance"
 							ng-disabled="!enableDnsLink" ng-click="stop()">Stop
 							Instance</button>
@@ -74,4 +79,3 @@
 	</div>
 </div>
 
-</div>

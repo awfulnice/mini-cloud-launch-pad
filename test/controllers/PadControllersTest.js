@@ -77,7 +77,8 @@ describe('PadServices test', function() {
 				$httpBackend.flush();
 
 				expect($scope.instance).not.toBe(undefined);
-				expect($scope.message.desc).toBe('Instance	Reachable!');
+				expect($scope.publicDnsName).not.toBe(undefined);
+				expect($scope.message.desc).toBe('Instance Reachable!');
 			});
 		});
 	});

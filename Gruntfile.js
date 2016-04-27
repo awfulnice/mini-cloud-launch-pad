@@ -3,7 +3,7 @@ module.exports = function(grunt) {
 
 	grunt
 			.initConfig({
-				pkg : grunt.file.readJSON('package.json'),
+				pkg: grunt.file.readJSON('package.json'),
 				karma : {
 					unit : {
 						options : {
@@ -18,7 +18,7 @@ module.exports = function(grunt) {
 
 									'public/src/app.js',
 									'public/src/general/*.js',
-
+									
 									'test/**/*.js' ]
 						}
 					}
@@ -70,7 +70,7 @@ module.exports = function(grunt) {
 					},
 					js : {
 						files : [ 'public/src/**/*.js' ],
-						tasks : [ 'jshint', 'uglify' ]
+						tasks : [ 'jshint', 'uglify']
 					}
 				},
 
@@ -87,6 +87,7 @@ module.exports = function(grunt) {
 					},
 					tasks : [ 'nodemon', 'watch' ]
 				},
+
 
 				debug : {
 					src : [ 'test/**/*.js' ],
@@ -108,17 +109,16 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-nodemon');
 	grunt.loadNpmTasks('grunt-concurrent');
 	grunt.loadNpmTasks('grunt-karma');
-
-	// grunt.registerTask('default', ['less', 'cssmin', 'jshint', 'uglify',
-	// 'concurrent']);
+	
+	grunt.registerTask('default', ['less', 'cssmin', 'jshint', 'uglify', 'concurrent']);
 
 	// Default task(s).
-	grunt.registerTask('default', [ 'concurrent' ]);
+	//grunt.registerTask('default', [ 'concurrent' ]);
 
 	// Other tasks
 	grunt.registerTask('ugly', [ 'less', 'cssmin', 'uglify', ]);
-	// grunt.registerTask('test', [ 'jshint', 'karma' ]);
-	grunt.registerTask('test', [ 'karma' ]);
+	grunt.registerTask('test', [ 'jshint', 'karma' ]);
+	//grunt.registerTask('test', [ 'karma' ]);
 
 	grunt.registerTask('doc', [ 'docco' ]);
 
