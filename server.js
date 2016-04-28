@@ -358,6 +358,10 @@ app.get('/api/restricted', function(req, res) {
 	});
 });
 
-app.listen(8080, function() {
+var server = app.listen(8080, function() {
 	console.log('listening on http://localhost:8080');
 });
+
+exports.closeServer = function(){
+  server.close();
+};
