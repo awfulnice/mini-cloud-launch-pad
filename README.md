@@ -33,9 +33,15 @@ For launch uglify and css compilation tasks
  grunt ugly
 ``` 
 
+For launch backend tests
+```node
+ npm test
+```
+
 ##Documentation
 
 Once started, the user is invited to complete AWS credentials and press submit.
-After the user presses submit, the backend code launch a Bitnami WordPress AMI displaying the different states through which it passes the instance. Once the instance is reachable, it shows a link to access the WordPress application and a button to stop the AMI. Also a logout button is displayed and become enabled when the reach checks ar completed. 
+After the user presses submit, the backend code launch a Bitnami WordPress AMI displaying the different states through which it passes the instance. Once the instance is reachable, it shows a link to access the WordPress application and a button to stop the AMI. Also a logout button is displayed and become enabled when the reach checks are completed.
+On stop button the different states of the AMI are shown until it is terminated.  
 
 

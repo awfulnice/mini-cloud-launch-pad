@@ -5,9 +5,8 @@ var jwt = require('jsonwebtoken'); // https://npmjs.org/package/node-jsonwebtoke
 var expressJwt = require('express-jwt'); // https://npmjs.org/package/express-jwt
 
 var secret = 'this is the secret secret secret 12356';
-
 var AWS = require('aws-sdk');
-
+var EC2 = require('./ec2Service.js')
 var app = express();
 
 // We are going to protect /api routes with JWT
@@ -64,28 +63,6 @@ app.post('/authenticate', function(req, res) {
 	});
 });
 
-// TODO: Refactor using modules
-
-// returns an ec2 interface with user credentials and region Ireland
-function initE2(req) {
-	// console.log(req.user.accessKeyId, req.user.secretAccessKey);
-	AWS.config.update({
-		accessKeyId : req.user.accessKeyId,
-		secretAccessKey : req.user.secretAccessKey
-	});
-
-	// TODO: region in token
-	AWS.config.region = 'eu-west-1';
-
-	// stick with an API version
-	AWS.config.apiVersions = {
-		ec2 : '2015-10-01'
-	};
-
-	// TODO: control connectivity errors
-	return new AWS.EC2();
-}
-
 // TODO: AMI params on client
 
 // Params needed to start Bitnami WordPress 4.4.2-2 on Ubuntu 14.04.3 with a new
@@ -109,7 +86,7 @@ app.get('/api/startAMI', function(req, res) {
 	console.log('starting AMI...');
 
 	// initialize AWS with profile from token
-	var ec2 = initE2(req);
+	var service = EC2.getEC2(req, AWS);
 
 	var GroupId = req.param('groupId');
 
@@ -119,8 +96,8 @@ app.get('/api/startAMI', function(req, res) {
 		ImageId : 'ami-48cc753b', // Bitnami WordPress 4.4.2-2 on Ubuntu
 		// 14.04.3
 		InstanceType : 't1.micro',
-		MinCount : 1,//20
-		MaxCount : 1,//20
+		MinCount : 1,// 20
+		MaxCount : 1,// 20
 		// SecurityGroups : [ 'Bitnami',
 		SecurityGroupIds : [ GroupId
 		/* more items */
@@ -129,7 +106,7 @@ app.get('/api/startAMI', function(req, res) {
 	console.log(startParams);
 
 	// Create the instance
-	ec2.runInstances(startParams, function(err, data) {
+	service.ec2.runInstances(startParams, function(err, data) {
 		console.log("running instance...", instanceId);
 		if (err) {
 			console.log("Could not create instance", err);
@@ -138,7 +115,7 @@ app.get('/api/startAMI', function(req, res) {
 			return;
 		}
 
-		//TODO: may have been launched more than one instance...
+		// TODO: may have been launched more than one instance...
 		instanceId = data.Instances[0].InstanceId;
 		console.log("Instance created!", instanceId);
 
@@ -150,7 +127,7 @@ app.get('/api/startAMI', function(req, res) {
 				Value : 'Bitnami-Wordpress-' + new Date().toString()
 			} ]
 		};
-		ec2.createTags(params, function(err) {
+		service.ec2.createTags(params, function(err) {
 			console.log("Tagging instance", err ? "failure" : "success");
 		});
 
@@ -166,7 +143,7 @@ app.get('/api/startAMI', function(req, res) {
 			// ... input parameters ...
 			InstanceIds : [ instanceId ]
 		};
-		ec2.describeInstanceStatus(params, function(err, data) {
+		service.ec2.describeInstanceStatus(params, function(err, data) {
 			if (err)
 				console.log(err, err.stack); // an error occurred
 			else {
@@ -186,16 +163,17 @@ app.get('/api/startAMI', function(req, res) {
 // TODO: test
 app.get('/api/waitFor', function(req, res) {
 
-	// console.log('param status: ', req.param('status'));
+	console.log('param status: ', req.param('status'));
 	// console.log('param instanceId: ', req.param('instanceId'));
 	// initialize AWS with profile from token
-	var ec2 = initE2(req);
+
+	var service = EC2.getEC2(req, AWS);
 	var params = {
 		InstanceIds : [ req.param('instanceId') ]
 	// ... input parameters ...
 	};
 
-	ec2.waitFor(req.param('status'), params, function(err, data) {
+	service.ec2.waitFor(req.param('status'), params, function(err, data) {
 		if (err)
 			console.log(err, err.stack); // an error occurred
 		else {
@@ -218,9 +196,9 @@ app.get('/api/describeInstance', function(req, res) {
 	};
 
 	// initialize AWS with profile from token
-	var ec2 = initE2(req);
+	var service = EC2.getEC2(req, AWS);
 	var returnData;
-	ec2.describeInstances(function(error, data) {
+	service.ec2.describeInstances(function(error, data) {
 		if (error) {
 			console.log(error); // an error occurred
 		} else {
@@ -260,26 +238,26 @@ app.get('/api/openHTTPPort', function(req, res) {
 		GroupName : secureGroupParams.GroupName,
 		Description : 'Bitnami mini cloud launch pad security group', /* required */
 	};
-
-	var ec2 = initE2(req);
+	var service = EC2.getEC2(req, AWS);
+	console.log(service);
 
 	// TODO: change callbacks for promises
 
 	// find the group if exists
-	ec2.describeSecurityGroups({
+	service.ec2.describeSecurityGroups({
 		GroupNames : [ params.GroupName ]
 	}, function(err, data) {
 		if (err) {
 			// Security Group does'nt exist. Create
 			console.log(err, err.stack); // an error occurred
 			console.log('Security Group do not exist. Create');
-			ec2.createSecurityGroup(params, function(err, data) {
+			service.ec2.createSecurityGroup(params, function(err, data) {
 				if (err)
 					console.log(err, err.stack); // an error occurred
 				else {
 					// open port http to outbound traffic
-					ec2.authorizeSecurityGroupIngress(secureGroupParams,
-							function(err, data) {
+					service.ec2.authorizeSecurityGroupIngress(
+							secureGroupParams, function(err, data) {
 								if (err) {
 									console.log("http port already opened");
 								} else {
@@ -303,52 +281,46 @@ app.get('/api/openHTTPPort', function(req, res) {
 });
 
 // TODO:test
-app
-		.get(
-				'/api/stopAMI',
-				function(req, res) {
-					var params = {
-					// ... input parameters ...
-					};
-					var ec2 = initE2(req);
-					ec2
-							.describeInstances(function(error, data) {
-								if (error) {
-									console.log(error); // an error occurred
-								} else {
+app.get('/api/stopAMI', function(req, res) {
+	var params = {
+		InstanceIds : [ req.param('instanceId') ]
+	// ... input parameters ...
+	};
+	var service = EC2.getEC2(req, AWS);
+	//
+	// service.ec2
+	// .describeInstances(function(error, data) {
+	// if (error) {
+	// console.log(error); // an error occurred
+	// } else {
+	//
+	// // TODO: control instance number
+	//									
+	// for ( var instance in data.Reservations) {
+	// var instanceId = data.Reservations[instance].Instances[0].InstanceId;
+	// console.log(instanceId);
+	service.ec2.terminateInstances(params, function(err, data) {
+		if (err) {
+			console.log("Could not stop instance", err);
+			//return;
+			res.json({
+				error : instanceId
+			});
+		} else {
+			console.log("terminate instance " + instanceId);
+			res.json({
+				data: data
+			});
+		};
+	});
 
-									// TODO: control instance number
-									for ( var instance in data.Reservations) {
-										var instanceId = data.Reservations[instance].Instances[0].InstanceId;
-										console.log(instanceId);
-										ec2
-												.terminateInstances(
-														{
-															InstanceIds : [ instanceId ]
-														},
-														function(err, data) {
-															if (err) {
-																console
-																		.log(
-																				"Could not stop instance",
-																				err);
-																return;
-															} else {
-																console
-																		.log("terminate instance "
-																				+ instanceId);
-															}
-														});
-									}
-								}
-							});
+	
+	//
+	// }
+	// });
 
-					console.log('stopped AMI...');
-
-					res.json({
-						name : 'stopped'
-					});
-				});
+	console.log('stopping AMs...');
+});
 
 app.get('/api/restricted', function(req, res) {
 	console.log(req);
@@ -362,6 +334,6 @@ var server = app.listen(8080, function() {
 	console.log('listening on http://localhost:8080');
 });
 
-exports.closeServer = function(){
-  server.close();
+exports.closeServer = function() {
+	server.close();
 };

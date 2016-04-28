@@ -30,9 +30,9 @@ padServices
 								},
 
 								// stops all AMIs
-								stop : function() {
+								stop : function(instanceId) {
 									return $http({
-										url : '/api/stopAMI',
+										url : '/api/stopAMI?instanceId=' + instanceId,
 										method : 'GET'
 									});
 								},

@@ -19,7 +19,7 @@ padApp
 							$scope.user = {
 								email : 'awfulnice@gmail.com',
 								password : '',
-								repassword : '',
+								account : '',
 								accessKeyId : '',
 								secretAccessKey : '',
 								remember : false
@@ -34,19 +34,20 @@ padApp
 												function(data, status, headers,
 														config) {
 													$window.sessionStorage.token = data.token;
-													$scope.isAuthenticated = true;
-													var encodedProfile = data.token
-															.split('.')[1];
-													var profile = JSON
-															.parse(url_base64_decode(encodedProfile));
 
-													console.log(profile);
-													console.log(data.token);
 													// TODO: authenticate users
 													// and save user info and
 													// credentials if remember
 													// me is checked
 													$scope.isAuthenticated = true;
+
+													var encodedProfile = data.token
+															.split('.')[1];
+													var profile = JSON
+															.parse(url_base64_decode(encodedProfile));
+
+												//	console.log(profile);
+													console.log(data.token);
 
 													// invoque service directly
 													$scope.startAMI();
@@ -104,6 +105,7 @@ padApp
 								// operating system
 								// configuration.
 								//			
+								
 								AWSService
 										.waitFor('instanceRunning',
 												$scope.instance.InstanceId)
@@ -112,7 +114,10 @@ padApp
 													// we suppose we are
 													// launching one instance...
 													$scope.publicDnsName = status.data.status.Reservations[0].Instances[0].PublicDnsName;
-													$scope.message.desc = 'Instance Running. Waiting to	complete reachability checks. Public DNS:'	+ $scope.publicDnsName;
+													$scope.message = {
+															desc : 'Instance Running. Waiting to complete reachability checks. Public DNS:'	+ $scope.publicDnsName,
+															type : 'info' };
+													
 
 													// Now we are sure the
 													// instance is running...
@@ -134,14 +139,42 @@ padApp
 													// calls to waitFor...
 												}).catch(function(err){
 													 console.log(err);
-													 $scope.message.desc = 'Unexpected error!' + err.data ?	 err.data : '';
-													 $scope.message.type = 'danger';
+													$scope.message = {
+														desc : 'Unexpected error!' + (err.data ? err.data : ''),
+														type : 'danger' };
 												});
 							};
-							//
-							// stop all instances
-							$scope.stop = function() {
-								AWSService.stop();
+							
+							// stop instance
+							$scope.stop = function(instanceId) {
+								$scope.message = {
+										desc : 'Launching stop instance event...',
+										type : 'info'
+									};
+
+								AWSService.stop(instanceId).then(
+										function(data) {
+											//console.log(data.data.data.TerminatingInstances[0].CurrentState.Name);
+											$scope.enableDnsLink = false;
+											$scope.message.desc = 'Shutting down...';
+											$scope.message.type = 'info';
+														
+											return AWSService
+											.waitFor(
+													'instanceTerminated',
+													instanceId).then(function(data){
+														//console.log(data.data.status.Reservations[0].Instances[0]);
+														$scope.message.desc = 'Instance Terminated!';
+														$scope.message.type = 'success';
+//													}, function(err){
+//														console.log(data);
+													});
+											
+										}).catch(function(err){
+											 console.log(err);
+											 $scope.message.desc = 'Unexpected error!' + (err.data ? err.data : '');
+											 $scope.message.type = 'danger';
+										});
 							};
 							//
 							// Start new Bitnami Wordpress instance.

@@ -3,6 +3,8 @@ var request = require("request");
 var server = require("../server.js")
 var base_url = "http://localhost:8080/"
 
+var AWS = require('mock-aws');
+
 describe("middleware/router.js", function() {
 	describe("GET /", function() {
 
@@ -14,12 +16,22 @@ describe("middleware/router.js", function() {
 			});
 		});
 
-//		it("returns Hello World", function(done) {
-//			request.get(base_url, function(error, response, body) {
-//				expect(body).toBe("Hello World");
-//				server.closeServer();
-//				done();
-//			});
+		//TODO
+//		/authenticate
+//		/waitFor
+//		/api/openHTTPPort
+//		/api/stopAMI
+		
+		//TODO: 
+		//ERR_EMPTY_RESPONSE
+		//limit of 20 instance
+		
+		
+//		// TODO:
+//		it("/api/startAMI should returns status code 200", function(done) {
+//
 //		});
+//
+
 	});
 });

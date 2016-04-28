@@ -26,8 +26,8 @@
 							<!-- 									class="form-control" id="password" ng-model="user.password"> -->
 							<!-- 							</div> -->
 							<!-- 							<div class="form-group"> -->
-							<!-- 								<label for="repassword"> Repeat password:</label> <input type="password" -->
-							<!-- 									class="form-control" id="repassword" ng-model="user.repassword"> -->
+							<!-- 								<label for="account"> Account:</label> <input type="text" -->
+							<!-- 									class="form-control" id="account" ng-model="user.account"> -->
 							<!-- 							</div> -->
 							<div class="form-group">
 
@@ -58,13 +58,13 @@
 						<div ng-if="enableDnsLink">
 							<a ng-href="http://{{publicDnsName}}" target="_blank">Access
 								Bitnami WordPress</a>
+							<button type="text" class="btn btn-primary" ng-if="instance"
+								ng-click="stop(instance.InstanceId)">Stop Instance</button>
 						</div>
 						</uib-alert>
 
 
-						<button type="text" class="btn btn-primary" ng-if="instance"
-							ng-disabled="!enableDnsLink" ng-click="stop()">Stop
-							Instance</button>
+
 						<button type="text" class="btn" ng-click="logout()">Logout</button>
 
 
