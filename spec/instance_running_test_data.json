@@ -1,0 +1,13 @@
+
+{
+	"Reservations:[ 
+	{
+		"Instances": [{
+			"InstanceId": "i-00174fe7e8bb7111d",
+			"InstanceType": "t1.micro",
+			"PrivateDnsName": "ip-172-31-34-218.eu-west-1.compute.internal",
+			"PublicDnsName":"ec2-52-18-79-192.eu-west-1.compute.amazonaws.com"
+		}]
+	}]
+}
+		
