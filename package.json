@@ -20,7 +20,7 @@
     "grunt": "^0.4.5",
     "grunt-cli": "^1.2.0",
     "jsonwebtoken": "~0.4.0",
-    "method-override": "~2.0.2",
+    "method-override": "~2.3.10",
     "request": "^2.72.0"
   },
   "devDependencies": {
